@@ -1,0 +1,5 @@
+en:
+  precious/views/commit:
+    changes_in: Changes in
+    commit: commit
+    meta_description: "%{author} committed %{authored_date}"

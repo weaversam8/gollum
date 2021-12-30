@@ -3,8 +3,14 @@
     <h1 class="header-title text-center text-md-left py-4">
       {{message}}
     </h1>
-    {{author}} commited {{authored_date}}
-    <span class="px-2 float-right">commit <code>{{version}}</code></span>
+
+    <span class="meta-description">
+      {{t.meta_description}}
+    </span>
+
+    <span class="px-2 float-right">
+      {{t.commit}} <code>{{version}}</code>
+    </span>
   </div>
 
   <div id="compare-content">
