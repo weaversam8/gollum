@@ -104,24 +104,24 @@ EOF
     page_2 = @wiki.page(page_1.name)
     assert_equal 'abc', page_2.raw_data
     assert_equal 'def', page_2.version.message
-    assert_not_equal page_1.version.sha, page_2.version.sha
+    refute_equal page_1.version.sha, page_2.version.sha
   end
-  
+
   test "edit page fails when page is outdated (edit collision)" do
     page = @wiki.page('A')
     old_sha = page.sha
     post "/gollum/edit/A", :content => 'abc', :page => 'A',
          :format => page.format, :message => 'def', :etag => old_sha
     assert last_response.ok?
-    
+
     @wiki.clear_cache
     page = @wiki.page('A')
     new_sha = page.sha
-    assert_not_equal old_sha, new_sha
-    
+    refute_equal old_sha, new_sha
+
     post "/gollum/edit/A", :content => 'def', :page => 'A',
          :format => page.format, :message => 'def', :etag => old_sha
-    assert_equal last_response.status, 412    
+    assert_equal last_response.status, 412
   end
 
   test "edit page with empty message" do
@@ -134,7 +134,7 @@ EOF
     page_2 = @wiki.page(page_1.name)
     assert_equal 'abc', page_2.raw_data
     assert_equal '[no message]', page_2.version.message
-    assert_not_equal page_1.version.sha, page_2.version.sha
+    refute_equal page_1.version.sha, page_2.version.sha
   end
 
   test "edit page with slash" do
@@ -165,12 +165,12 @@ EOF
     assert_equal 'header', header_2.raw_data
     assert_equal 'footer', foot_2.raw_data
     assert_equal 'def', foot_2.version.message
-    assert_not_equal foot_1.version.sha, foot_2.version.sha
-    assert_not_equal header_1.version.sha, header_2.version.sha
+    refute_equal foot_1.version.sha, foot_2.version.sha
+    refute_equal header_1.version.sha, header_2.version.sha
 
     assert_equal 'sidebar', side_2.raw_data
     assert_equal 'def', side_2.version.message
-    assert_not_equal side_1.version.sha, side_2.version.sha
+    refute_equal side_1.version.sha, side_2.version.sha
     assert_equal commits+1, @wiki.repo.commits('master').size
   end
 
@@ -187,7 +187,7 @@ EOF
     page_2 = @wiki.page('C')
     assert_equal "INITIAL\n\nSPAM2\n", page_2.raw_data
     assert_equal 'def', page_2.last_version.message
-    assert_not_equal page_1.version.sha, page_2.version.sha
+    refute_equal page_1.version.sha, page_2.version.sha
   end
 
   test "rename preserves format" do
@@ -222,7 +222,7 @@ EOF
 
   test "renames page in subdirectory" do
     page_1 = @wiki.page("G/H")
-    assert_not_equal page_1, nil
+    refute_equal page_1, nil
     post "/gollum/rename/G/H", :rename => "/I/C", :message => 'def'
 
     follow_redirect!
@@ -234,12 +234,12 @@ EOF
     page_2 = @wiki.page('I/C')
     assert_equal "INITIAL\n\nSPAM2\n", page_2.raw_data
     assert_equal 'def', page_2.last_version.message
-    assert_not_equal page_1.version.sha, page_2.version.sha
+    refute_equal page_1.version.sha, page_2.version.sha
   end
 
   test "renames page relative in subdirectory" do
     page_1 = @wiki.page("G/H")
-    assert_not_equal page_1, nil
+    refute_equal page_1, nil
     post "/gollum/rename/G/H", :rename => "K/C", :message => 'def'
 
     follow_redirect!
@@ -251,7 +251,7 @@ EOF
     page_2 = @wiki.page('G/K/C')
     assert_equal "INITIAL\n\nSPAM2\n", page_2.raw_data
     assert_equal 'def', page_2.last_version.message
-    assert_not_equal page_1.version.sha, page_2.version.sha
+    refute_equal page_1.version.sha, page_2.version.sha
   end
 
   test "creates page" do
@@ -320,7 +320,7 @@ EOF
     name = "#{dir}/bar"
     get "/gollum/create/#{name}"
     assert_match(/\/#{dir}/, last_response.body)
-    assert_no_match(/[^\/]#{dir}/, last_response.body)
+    refute_match(/[^\/]#{dir}/, last_response.body)
   end
 
   test "create with template succeed if template exists" do
@@ -351,7 +351,7 @@ EOF
     post '/gollum/edit/', :content => 'edit_msg',
          :page              => page, :path => path, :message => ''
     page_e = @wiki.page(::File.join(path,page))
-    assert_equal nil, page_e
+    assert_nil page_e
   end
 
   test "edit allows changing format" do
@@ -407,23 +407,23 @@ EOF
 
     @wiki.clear_cache
     page = @wiki.page(name)
-    assert_not_equal 'abc', page.raw_data
+    refute_equal 'abc', page.raw_data
   end
-  
+
   test "uploading is not allowed unless explicitly enabled" do
     temp_upload_file = Tempfile.new(['upload', '.file']) << 'abc'
     temp_upload_file.close
     post "/gollum/upload_file", :file => Rack::Test::UploadedFile.new(::File.open(temp_upload_file))
     assert_equal 405, last_response.status
   end
-  
+
   test "upload a file with mode dir" do
     temp_upload_file = Tempfile.new(['upload', '.file']) << 'abc'
     temp_upload_file.close
     Precious::App.set(:wiki_options, {allow_uploads: true})
-  
+
     post "/gollum/upload_file", :file => Rack::Test::UploadedFile.new(::File.open(temp_upload_file))
-  
+
     assert_equal 302, last_response.status # redirect is expected
     @wiki.clear_cache
     file = @wiki.file("uploads/#{::File.basename(temp_upload_file.path)}")
@@ -483,7 +483,7 @@ EOF
 
     @wiki.clear_cache
     page = @wiki.page(name)
-    assert_equal nil, page
+    assert_nil page
   end
 
   test "previews content" do
@@ -507,7 +507,7 @@ EOF
 
     @wiki.clear_cache
     page2 = @wiki.page('B')
-    assert_not_equal page1.version.sha, page2.version.sha
+    refute_equal page1.version.sha, page2.version.sha
     assert_equal "INITIAL", page2.raw_data.strip
     assert_equal "Revert commit 7c45b5f", page2.version.message
   end
@@ -521,7 +521,7 @@ EOF
 
     @wiki.clear_cache
     page2 = @wiki.page('A')
-    assert_not_equal page1.version.sha, page2.version.sha
+    refute_equal page1.version.sha, page2.version.sha
     assert_equal "INITIAL", page2.raw_data.strip
   end
 
@@ -583,7 +583,7 @@ EOF
                      { :name => 'user1', :email => 'user1' });
 
     get page
-    assert_no_match /custom.js/, last_response.body
+    refute_match /custom.js/, last_response.body
   end
 
   test "add custom.js if setting" do
@@ -652,7 +652,7 @@ EOF
     get "A"
 
     assert last_response.ok?
-    assert_no_match /meta name="robots" content="noindex, nofollow"/, last_response.body
+    refute_match /meta name="robots" content="noindex, nofollow"/, last_response.body
 
     get "A/fc66539528eb96f21b2bbdbf557788fe8a1196ac"
 
@@ -827,7 +827,7 @@ context "Frontend with lotr" do
     
     get "Data.csv/#{old_sha}"
     assert last_response.ok?
-    assert_no_match /Samwise,Gamgee/, last_response.body
+    refute_match /Samwise,Gamgee/, last_response.body
 
     get "Data.csv/#{update_sha}"
     assert last_response.ok?
@@ -872,7 +872,7 @@ context "Frontend with page-file-dir" do
     name = "#{dir}/baz"
     get "/gollum/create/#{name}"
     assert_match(/\/#{dir}/, last_response.body)
-    assert_no_match(/[^\/]#{dir}/, last_response.body)
+    refute_match(/[^\/]#{dir}/, last_response.body)
   end
 
   test "use custom.css from page-file-dir path if page-file-dir is set" do

@@ -1,11 +1,11 @@
 require 'rubygems'
 require 'rack/test'
-require 'test/unit'
 require 'shoulda'
-require 'mocha/setup'
-require 'fileutils'
+require 'minitest/autorun'
 require 'minitest/reporters'
 require 'minitest/spec'
+require 'mocha/setup'
+require 'fileutils'
 require 'tmpdir'
 
 # Silence locale validation warning
@@ -68,8 +68,7 @@ end
 # file:lib/test/spec/mini.rb
 def context(*args, &block)
   return super unless (name = args.first) && block
-  require 'test/unit'
-  klass = Class.new(defined?(ActiveSupport::TestCase) ? ActiveSupport::TestCase : Test::Unit::TestCase) do
+  klass = Class.new(Minitest::Test) do
     def self.test(name, &block)
       define_method("test_#{name.gsub(/\W/, '_')}", &block) if block
     end
