@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.6'
 
   s.name              = 'gollum'
-  s.version           = '5.2.4'
+  s.version           = '5.2.5'
   s.date              = '2022-01-17'
   s.license           = 'MIT'
 
